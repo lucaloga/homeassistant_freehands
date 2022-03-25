@@ -16,6 +16,9 @@ from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 from homeassistant.helpers.update_coordinator import UpdateFailed
 
+import random
+from paho.mqtt import client as mqtt_client
+
 from .api import FreehandsApiClient
 from .const import CONF_PASSWORD
 from .const import CONF_USERNAME
@@ -108,3 +111,29 @@ async def async_reload_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
     """Reload config entry."""
     await async_unload_entry(hass, entry)
     await async_setup_entry(hass, entry)
+
+broker = "10.0.1.8"
+port = 1883
+topic = "zigbee2mqtt/+"
+# generate client ID with pub prefix randomly
+client_id = f'python-mqtt-{random.randint(0, 1000)}'
+username = 'mqtt'
+password = 'mqtt12'
+
+def on_connect(client, userdata, flags, rc):
+    if rc == 0:
+        _LOGGER.info("freeHands connected to MQTT Broker!")
+    else:
+        _LOGGER.info("freeHands failed to connect, return code %d\n", rc)
+
+def on_message(client, userdata, msg):
+    _LOGGER.info(f"Received `{msg.payload.decode()}` from `{msg.topic}` topic")
+
+client = mqtt_client.Client(client_id)
+client.username_pw_set(username, password)
+client.on_connect = on_connect
+client.on_message = on_message
+client.connect(broker, port)
+client.loop_start()
+
+client.subscribe(topic)
