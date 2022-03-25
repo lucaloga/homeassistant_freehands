@@ -26,7 +26,7 @@ from .const import STARTUP_MESSAGE
 SCAN_INTERVAL = timedelta(seconds=30)
 
 _LOGGER: logging.Logger = logging.getLogger(__package__)
-
+_LOGGER.info("Hello World freeHands!")
 
 async def async_setup(hass: HomeAssistant, config: Config):
     """Set up this integration using YAML is not supported."""
